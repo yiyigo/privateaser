@@ -3,6 +3,7 @@
 //list of bats
 //useful for ALL 5 steps
 //could be an array of objects that you fetched from api or database
+
 const bars = [{
   'id': 'f944a3ff-591b-4d5b-9b67-c7e08cba9791',
   'name': 'freemousse-bar',
@@ -145,6 +146,79 @@ const actors = [{
     'amount': 0
   }]
 }];
+
+
+const getBar = id => bars.find(bar => bar.id === id)
+const getEvent = id => events.find(event => event.id === id)
+
+  const discount = persons => {
+    if (persons > 60) {
+      return 0.5;
+    }
+
+    if (persons > 20) {
+      return 0.3;
+    }
+
+    if (persons > 10) {
+      return 0.1;
+    }
+
+    return 0;
+  };
+events.forEach(event =>{
+
+const barId = event.barId;
+const time = event.time;
+const persons = event.persons;
+const bar = getBar(barId);
+const commission = event.commission
+
+event.price = (time * bar.pricePerHour + persons * bar.pricePerPerson)*(1 - discount(persons));
+event.commissionprice = event.price * 0.3;
+commission.insurance = event.commissionprice * 0.5;
+commission.treasury = persons;
+commission.privateaser = event.commissionprice - commission.insurance - commission.treasury;
+
+if(event.options.deductibleReduction == true){
+event.finalprice = event.price + persons;
+commission.afterprivateaser = commission.privateaser + persons;
+}
+else if(event.options.deductibleReduction == false){
+event.finalprice = event.price;
+commission.afterprivateaser = commission.privateaser;
+}
+})
+
+actors.forEach(actor =>{
+
+const eventId = actor.eventId;
+const event = getEvent(eventId);
+const commission = event.commission;
+
+actor.payment.forEach(payment =>{
+
+if(payment.who == 'booker'){
+    payment.amount = event.finalprice;
+    }
+    else if(payment.who == 'bar'){
+        payment.amount = event.price - event.commissionprice;
+        }
+    else if(payment.who == 'insurance'){
+        payment.amount = commission.insurance;
+        }
+    else if(payment.who == 'treasury'){
+        payment.amount = commission.treasury;
+        }
+    else if(payment.who == 'privateaser'){
+        payment.amount = commission.afterprivateaser;
+        }
+
+})
+
+})
+
+
 
 console.log(bars);
 console.log(events);
